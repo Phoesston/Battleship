@@ -1,5 +1,5 @@
 {
-  "name": "webpacktemplate",
+  "name": "battleship",
   "version": "1.0.0",
   "description": "template for webpack",
   "main": "index.js",
@@ -12,14 +12,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Phoesston/webpackTemplate.git"
+    "url": "git+https://github.com/Phoesston/Battleship.git"
   },
   "author": "Phoesston",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/Phoesston/webpackTemplate/issues"
+    "url": "https://github.com/Phoesston/Battleship/issues"
   },
-  "homepage": "https://Phoesston.github.io/webpackTemplate/",
+  "homepage": "https://Phoesston.github.io/Battleship/",
   "devDependencies": {
     "@babel/core": "^7.28.5",
     "@babel/preset-env": "^7.28.5",
