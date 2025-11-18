@@ -1,11 +1,13 @@
-const Ship =  require('./Ship');
+import Ship from "./Ship";
 
-class Gameboard{
+export default class Gameboard{
     constructor(size = 10){
         this.size = size;
         this.board = this.createEmptyBoard();
         this.missedShots = [];
         this.ships = [];
+        this.draggedShip = null;   
+        this.orientation = 'horizontal'; 
     }
 
     createEmptyBoard(){
@@ -24,6 +26,71 @@ class Gameboard{
 
         return board;
     }
+
+    drawBoard(htmlContainer){
+        htmlContainer.innerHTML = '';
+
+        for(let row = 0; row<this.size; row++){
+            for(let col = 0; col<this.size; col++){
+                const cellDiv = document.createElement('div');
+                cellDiv.classList.add('cell');
+
+                const value = this.board[row][col];
+
+                //displaye ships in the players board
+                if(value instanceof Ship){
+                    cellDiv.classList.add('Ship');
+                }
+
+                if (value === 'hit') cellDiv.classList.add('hit');
+                if (value === 'miss') cellDiv.classList.add('miss');
+
+                cellDiv.addEventListener('click', () =>{
+                    const result = this.receiveAttack(row,col);
+
+                    console.log(`Attack at ${row},${col}:`,result);
+
+                    this.drawBoard(htmlContainer);
+                });
+
+                htmlContainer.appendChild(cellDiv);
+            }
+        }
+    }
+
+    enableShipDrag(shipElements, container) {
+        shipElements.forEach(shipEl => {
+            shipEl.addEventListener('dragstart', () => {
+                this.draggedShip = new Ship(Number(shipEl.dataset.size));
+            });
+
+            shipEl.addEventListener('click', () => {
+                this.orientation = this.orientation === 'horizontal' ? 'vertical' : 'horizontal';
+                shipEl.textContent = `${shipEl.dataset.name} (${this.orientation})`;
+            });
+        });
+
+        const cells = container.querySelectorAll('.cell');
+        cells.forEach((cell, index) => {
+            const row = Math.floor(index / this.size);
+            const col = index % this.size;
+
+            cell.addEventListener('dragover', e => e.preventDefault());
+
+            cell.addEventListener('drop', () => {
+                if (!this.draggedShip) return;
+                try {
+                    this.placeShip(this.draggedShip, row, col, this.orientation);
+                    this.draggedShip = null;
+                    this.drawBoard(container);
+                } catch (err) {
+                    alert(err.message);
+                }
+            });
+        });
+    }
+
+   
 
     placeShip(ship, row, col, direction = "horizontal") {
         const size = ship.size;
@@ -107,4 +174,4 @@ class Gameboard{
 
 }
 
-module.exports = Gameboard;
+//module.exports = Gameboard;

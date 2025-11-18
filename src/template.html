@@ -5,30 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 
-    <title>weather</title>
+    <title>battleship</title>
 </head>
 <body>
-    <header>
-        <div class="title">
-            <h2>The Forecast</h2>
-        </div>
-        <div class="search-bar">
-            <input type="text" id="cityInput" placeholder="Enter a city...">
-            <ul class="suggestions"></ul>
-        </div>
-    </header>
    
+  <div id="menu-screen">
 
-    <div id="weatherInfo">
-        <div id="main-info">
-            <div id="current-weather"></div>
-            <div class="weather-graphics" id="weather-graphics"></div>
+    <h1>Battleship</h1>
+
+    <button id="pvpBtn">Player vs Player</button>
+    <button id="pvcBtn">Player vs Computer</button>
+  </div>
+
+ 
+  <div id="placement-screen" class="hidden">
+        <h2>Place Your Ships</h2>
+
+        <div id="ship-container">
+            <div class="ship" draggable="true" data-size="5">Carrier</div>
+            <div class="ship" draggable="true" data-size="4">Battleship</div>
+            <div class="ship" draggable="true" data-size="3">Cruiser</div>
+            <div class="ship" draggable="true" data-size="3">Submarine</div>
+            <div class="ship" draggable="true" data-size="2">Destroyer</div>
         </div>
 
-        <div class="weather-hourly"></div>
-
-        <div class="weather-weekly"></div>
+        <div id="player-board-container" class="board"></div>
+        <button id="start-game-btn">Start Game</button>
     </div>
+
+  
+  <div id="game-screen" class="hidden">
+
+    <h2>Battle!</h2>
+
+    <div id="boards-container">
+      <div id="player-board"></div>
+      <div id="opponent-board"></div>
+    </div>
+
+    <p id="turn-info"></p>
+  </div>
     
 
 </body>

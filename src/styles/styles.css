@@ -1,4 +1,143 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
 
+body {
+    background-color: #1e2a38;
+    color: #f0f0f0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+
+.hidden {
+    display: none;
+}
+
+
+h1, h2 {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+
+button {
+    padding: 10px 20px;
+    margin: 10px;
+    border: none;
+    border-radius: 8px;
+    background-color: #4a90e2;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    background-color: #357abd;
+}
+
+
+.board, #player-board-container, #player-board, #opponent-board {
+    display: grid;
+    grid-template-columns: repeat(10, 40px);
+    grid-template-rows: repeat(10, 40px);
+    gap: 2px;
+    margin: 20px auto;
+    background-color: #2b3a4a;
+    padding: 5px;
+    border-radius: 8px;
+}
+
+
+.cell {
+    width: 40px;
+    height: 40px;
+    background-color: #3b4b5c;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.cell:hover {
+    background-color: #4a5b6c;
+}
+
+
+.cell.Ship {
+    background-color: #4a90e2; 
+}
+
+/* Hit/miss */
+.cell.hit {
+    background-color: #e74c3c; 
+}
+
+.cell.miss {
+    background-color: #f1c40f; 
+}
+
+
+#boards-container {
+    display: flex;
+    gap: 40px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+
+#ship-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.ship {
+    padding: 5px 10px;
+    border-radius: 6px;
+    background-color: #4a90e2;
+    cursor: grab;
+    color: white;
+    font-weight: bold;
+    text-align: center;
+}
+
+.ship:active {
+    cursor: grabbing;
+}
+
+
+#turn-info {
+    text-align: center;
+    font-size: 1.2rem;
+    margin-top: 20px;
+    font-weight: bold;
+}
+
+
+@media (max-width: 600px) {
+    .board, #player-board-container, #player-board, #opponent-board {
+        grid-template-columns: repeat(10, 30px);
+        grid-template-rows: repeat(10, 30px);
+    }
+
+    .cell {
+        width: 30px;
+        height: 30px;
+    }
+}
 
 
 

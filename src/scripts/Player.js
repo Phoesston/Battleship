@@ -1,6 +1,6 @@
-const Gameboard = require('./Gameboard');
+import Gameboard from "./Gameboard";
 
-class Player{
+export default class Player{
     constructor(type){
         this.type = type;
         this.gameboard = new Gameboard();
@@ -41,7 +41,33 @@ class Player{
         result = opponentBoard.receiveAttack(row,col);
 
         return result;
-}
+    }
+
+    randomPlaceShips() {
+        const shipsToPlace = [
+            new Ship(5), // Carrier
+            new Ship(4), // Battleship
+            new Ship(3), // Cruiser
+            new Ship(3), // Submarine
+            new Ship(2)  // Destroyer
+        ];
+
+        shipsToPlace.forEach(ship => {
+            let placed = false;
+            while (!placed) {
+                const row = Math.floor(Math.random() * this.gameboard.size);
+                const col = Math.floor(Math.random() * this.gameboard.size);
+                const direction = Math.random() < 0.5 ? 'horizontal' : 'vertical';
+                
+                try {
+                    this.gameboard.placeShip(ship, row, col, direction);
+                    placed = true;
+                } catch (err) {
+                    // Failed placement (collision or out of bounds), try again
+                }
+            }
+        });
+    }
 }
 
-module.exports = Player;
+//module.exports = Player;
