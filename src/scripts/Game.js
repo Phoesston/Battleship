@@ -41,13 +41,16 @@ export default class Game{
             const boardContainer = document.getElementById('player-board-container');
             document.getElementById('placement-screen').classList.remove('hidden');
 
-            // Draw board
+            
             this.player1.gameboard.drawBoard(boardContainer);
 
             // Enable drag & drop
+            
             const shipContainer = document.getElementById('ship-container');
             const ships = Array.from(shipContainer.querySelectorAll('.ship'));
             this.player1.gameboard.enableShipDrag(ships, boardContainer);
+           
+           
 
         } else if (screen === 'game') {
             document.getElementById('game-screen').classList.remove('hidden');

@@ -34,8 +34,11 @@ export default class Gameboard{
             for(let col = 0; col<this.size; col++){
                 const cellDiv = document.createElement('div');
                 cellDiv.classList.add('cell');
+                //cellDiv.innerText = `r${row},c${col}`;
 
                 const value = this.board[row][col];
+                cellDiv.dataset.row = row;
+                cellDiv.dataset.col = col;
 
                 //displaye ships in the players board
                 if(value instanceof Ship){
@@ -72,10 +75,22 @@ export default class Gameboard{
 
         const cells = container.querySelectorAll('.cell');
         cells.forEach((cell, index) => {
-            const row = Math.floor(index / this.size);
-            const col = index % this.size;
+            const row = Number(cell.dataset.row);
+            const col = Number(cell.dataset.col);
 
-            cell.addEventListener('dragover', e => e.preventDefault());
+            cell.addEventListener('dragover', e => {
+                e.preventDefault()
+                if(!this.draggedShip) return;
+                
+
+                this.clearHighlights();
+                this.highlight(row,col,this.draggedShip.size, this.orientation);
+
+            });
+
+            cell.addEventListener('dragleave', ()=>{
+                this.clearHighlights();
+            });
 
             cell.addEventListener('drop', () => {
                 if (!this.draggedShip) return;
@@ -87,6 +102,33 @@ export default class Gameboard{
                     alert(err.message);
                 }
             });
+        });
+    }
+
+    highlight(row,col,size,orientation){
+        this.clearHighlights();
+
+        for(let i = 0;i<size;i++){
+            let r = row;
+            let c = col;
+
+            if(orientation === 'horizontal'){
+                c+=i;
+            }else{
+                r += i
+            }
+
+            if(r>= this.size || c>= this.size) break;
+
+            const cellDiv = document.querySelector(`.cell[data-row='${r}'][data-col='${c}']`);
+
+            if(cellDiv) cellDiv.classList.add('highlight');
+        }
+    }
+
+    clearHighlights(){
+        document.querySelectorAll('.cell.highlight').forEach(cell => {
+            cell.classList.remove('highlight');
         });
     }
 
