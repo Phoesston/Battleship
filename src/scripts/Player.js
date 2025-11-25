@@ -1,10 +1,13 @@
 import Gameboard from "./Gameboard";
+import Ship from "./Ship";
 
 export default class Player{
     constructor(type){
         this.type = type;
         this.gameboard = new Gameboard();
         this.attackRecord = new Set();
+        this.lastHit = null;
+        this.targetQueue = [];
     }
 
     humanAttack(opponentBoard,row,col){
@@ -12,44 +15,81 @@ export default class Player{
     }
 
    computerAttack(opponentBoard){
-        let row, col, result;
+        let target;
 
-        do {
-            row = Math.floor(Math.random() * opponentBoard.size);
-            col = Math.floor(Math.random() * opponentBoard.size);
+        
+        if(this.targetQueue.length > 0){
+            target = this.targetQueue.shift();
+        }else{
+            do{
+                const row = Math.floor(Math.random() * opponentBoard.size);
+                const col = Math.floor(Math.random() * opponentBoard.size);
 
-            if(opponentBoard.board[row][col] === 'hit'){
-                const direction = Math.random() < 0.5 ? 'row' : 'col';
+                target = {row,col};
+            }while(this.attackRecord.has(`${target.row},${target.col}`))
+        }
 
-                if(direction === 'row' && row + 1 < opponentBoard.size && !this.attackRecord.has(`${row+1},${col}`)){
-                    row += 1;
-                } else if(direction === 'col' && col + 1 < opponentBoard.size && !this.attackRecord.has(`${row},${col+1}`)){
-                    col +=1;
-                } else if(direction === 'row' && col + 1 < opponentBoard.size && !this.attackRecord.has(`${row},${col+1}`)){
-                    col +=1;
-                } else if(direction === 'col' && row + 1 < opponentBoard.size && !this.attackRecord.has(`${row+1},${col}`)){
-                    row +=1;
+        this.attackRecord.add(`${target.row},${target.col}`);
+
+        const result = opponentBoard.receiveAttack(target.row,target.col);
+
+        if(result === 'hit'){
+
+            const{row,col} = target;
+            const size = opponentBoard.size;
+
+            if(!this.lastHit){
+                const candidates = [
+                    { row: row - 1, col },     // up
+                    { row: row + 1, col },     // down
+                    { row, col: col - 1 },     // left
+                    { row, col: col + 1 }      // right
+                ];
+
+
+                for(const c of candidates){
+                    const key = `${c.row},${c.col}`;
+
+                    if( c.row >= 0 &&
+                        c.row < size &&
+                        c.col >= 0 &&
+                        c.col < size &&
+                        !this.attackRecord.has(key)){
+                            this.targetQueue.push(c);
+                        }
                 }
-                // if all adjacent options are already attacked, do nothing; loop picks a random cell next
+            }else{
+                const dx = row - this.lastHit.row;
+                const dy = col - this.lastHit.col;
+
+                const next = { row: row + dx, col: col + dy };
+                const reverse = { row: this.lastHit.row - dx, col: this.lastHit.col - dy };
+
+                [next, reverse].forEach(c => {
+                    const key = `${c.row},${c.col}`;
+                    if (
+                        c.row >= 0 && c.row < size &&
+                        c.col >= 0 && c.col < size &&
+                        !this.attackRecord.has(key)
+                    ) {
+                        this.targetQueue.push(c);
+                    }
+                });
             }
 
-        } while (this.attackRecord.has(`${row},${col}`));
-
-        const key = `${row},${col}`;
-        this.attackRecord.add(key);
-
-        result = opponentBoard.receiveAttack(row,col);
+        
+        }
 
         return result;
     }
 
     randomPlaceShips() {
         const shipsToPlace = [
-            new Ship(5), // Carrier
-            new Ship(4), // Battleship
-            new Ship(3), // Cruiser
-            new Ship(3), // Submarine
-            new Ship(2)  // Destroyer
+            new Ship(5,'Carrier'), 
+            new Ship(4,'Battleship'), 
+            new Ship(3,'Cruiser'),
+            new Ship(3,'Submarine'), 
+            new Ship(2,'Destroyer')  
         ];
 
         shipsToPlace.forEach(ship => {
@@ -63,7 +103,8 @@ export default class Player{
                     this.gameboard.placeShip(ship, row, col, direction);
                     placed = true;
                 } catch (err) {
-                    // Failed placement (collision or out of bounds), try again
+                   
+                   
                 }
             }
         });

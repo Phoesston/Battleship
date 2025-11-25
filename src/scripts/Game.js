@@ -14,6 +14,51 @@ export default class Game{
         this.modeUI();
     }
 
+    setupBoardListeners(){
+        const player2Board = document.getElementById('player2-board');
+
+        player2Board.addEventListener('click', (e) => {
+            // Only proceed if we clicked on a cell
+            if (e.target.classList.contains('cell')) {
+                const row = Number(e.target.dataset.row);
+                const col = Number(e.target.dataset.col);
+                this.handleAttack(row, col);
+            }
+        });
+    }
+
+    handleAttack(row, col) {
+        
+        if (this.state.phase !== 'playing') return;
+        if (this.state.turn !== 'player1') return;
+
+        const result = this.player2.gameboard.receiveAttack(row, col);
+
+        
+        if (result === 'hit' || result === 'miss') {
+            this.updateBoards(); // Redraw
+            this.checkGameOver();
+            
+            if (this.state.phase !== 'gameover') {
+                this.nextTurn();
+                if (this.state.mode === 'pvc') {
+                    this.computerTurn();
+                }
+            }
+        }
+    }
+
+    updateBoards() {
+        const p1Board = document.getElementById('player1-board');
+        const p2Board = document.getElementById('player2-board');
+
+        this.player1.gameboard.drawBoard(p1Board, true);
+        this.player2.gameboard.drawBoard(p2Board, false);
+
+        this.updateSunkList();
+        this.setupBoardListeners();
+    }
+
     modeUI() {
         document.getElementById('pvpBtn').addEventListener('click', () => {
             this.state.mode = "pvp";
@@ -41,32 +86,70 @@ export default class Game{
             const boardContainer = document.getElementById('player-board-container');
             document.getElementById('placement-screen').classList.remove('hidden');
 
+            if(this.state.mode === 'pvc'){
+                this.player1.gameboard.enableShipDrag(boardContainer);
+                this.player2.randomPlaceShips();
+            }else{
+                alert('pvp');
+            }
             
-            this.player1.gameboard.drawBoard(boardContainer);
-
-            // Enable drag & drop
-            
-            const shipContainer = document.getElementById('ship-container');
-            const ships = Array.from(shipContainer.querySelectorAll('.ship'));
-            this.player1.gameboard.enableShipDrag(ships, boardContainer);
-           
-           
+                   
 
         } else if (screen === 'game') {
             document.getElementById('game-screen').classList.remove('hidden');
-            this.player1.gameboard.drawBoard(document.getElementById('player-board'));
-            this.player2.gameboard.drawBoard(document.getElementById('opponent-board'));
+            this.player1.gameboard.drawBoard(document.getElementById('player1-board'),true);
+            this.player2.gameboard.drawBoard(document.getElementById('player2-board'),false);
         }
     }
+
 
     startGame(){
         this.state.phase = 'playing';
         this.switchScreen('game');
+        this.updateTurnInfo();
 
-        if (this.state.mode === 'pvc' && this.state.turn === 'computer') {
+        this.setupBoardListeners();
+
+        if (this.state.mode === 'pvc' && this.state.turn !== 'player1') {
             this.computerTurn();
         }
+
+
     }
+
+    updateSunkList(){
+        const player1SunkContainer = document.getElementById('player1-sunked');
+        const player2SunkContainer = document.getElementById('player2-sunked');
+
+        player1SunkContainer.innerHTML = '';
+        player2SunkContainer.innerHTML = '';
+
+        this.player1.gameboard.ships.forEach(ship => {
+            if(this.player1.gameboard.isShipSunk(ship)){
+                const entry = document.createElement('div');
+                entry.classList.add('sunk-entry');
+                entry.textContent = ship.name;
+                player1SunkContainer.appendChild(entry);
+
+                entry.classList.add("new");
+                setTimeout(() => entry.classList.remove("new"), 600);
+            }
+        });
+
+        this.player2.gameboard.ships.forEach(ship =>{
+            if(this.player2.gameboard.isShipSunk(ship)){
+                const entry = document.createElement('div');
+                entry.classList.add('sunk-entry');
+                entry.textContent = ship.name;
+                player2SunkContainer.appendChild(entry);
+
+                entry.classList.add("new");
+                setTimeout(() => entry.classList.remove("new"), 600);
+            }
+            
+        });
+    }
+
 
     updateTurnInfo() {
         const turnText = this.state.turn === 'player1' ? "Player 1's Turn" :
@@ -86,25 +169,40 @@ export default class Game{
 
     computerTurn() {
         setTimeout(() => {
-            const result = this.player2.computerAttack(this.player1.gameboard);
-            console.log('Computer attacked:', result);
+            if (this.state.phase === 'gameover') return;
 
-            // redraw board
-            this.player1.gameboard.drawBoard(document.getElementById('player-board'));
+            this.player2.computerAttack(this.player1.gameboard);
+            
+            this.updateBoards(); 
+            this.updateSunkList();
 
             this.checkGameOver();
+            
             if (this.state.phase !== 'gameover') {
                 this.nextTurn();
             }
-        }, 500);
+        }, 1000);
     }
 
     checkGameOver() {
+        
         if (this.player1.gameboard.allShipsSunk()) {
-            alert("Player 2 wins!");
+            if (this.state.mode === 'pvc') {
+                alert("Computer wins!");
+            } else {
+                alert("Player 2 wins!");
+            }
             this.state.phase = "gameover";
-        } else if (this.player2.gameboard.allShipsSunk()) {
-            alert(this.state.mode === "pvc" ? "Computer wins!" : "Player 1 wins!");
+            return;
+        }
+
+        
+        if (this.player2.gameboard.allShipsSunk()) {
+            if (this.state.mode === 'pvc') {
+                alert("You win!");
+            } else {
+                alert("Player 1 wins!");
+            }
             this.state.phase = "gameover";
         }
     }

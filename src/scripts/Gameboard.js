@@ -27,8 +27,8 @@ export default class Gameboard{
         return board;
     }
 
-    drawBoard(htmlContainer){
-        htmlContainer.innerHTML = '';
+    drawBoard(container,showShips = true){
+        container.innerHTML = '';
 
         for(let row = 0; row<this.size; row++){
             for(let col = 0; col<this.size; col++){
@@ -40,39 +40,62 @@ export default class Gameboard{
                 cellDiv.dataset.row = row;
                 cellDiv.dataset.col = col;
 
-                //displaye ships in the players board
-                if(value instanceof Ship){
+                //displaye ships in the players board for testing
+                if(value instanceof Ship && showShips){
+                    
                     cellDiv.classList.add('Ship');
+
+                    //make placed ships draggable again
+                    //cellDiv.draggable = true;
+                    //cellDiv.addEventListener('dragstart', () => {
+                        //this.draggedShip = value;
+
+                        //for(let i = 0; i<value.size; i++){
+                            //if(this.orientation === 'horizontal'){
+                                //this.board[row][col + i] = 0;
+                            //}else{
+                                //this.board[row+i][col] = 0;
+                            //}
+                        //}
+
+                        //this.drawBoard(container);
+                        //this.addDragListeners(container);
+                    //});
                 }
 
                 if (value === 'hit') cellDiv.classList.add('hit');
                 if (value === 'miss') cellDiv.classList.add('miss');
 
-                cellDiv.addEventListener('click', () =>{
-                    const result = this.receiveAttack(row,col);
-
-                    console.log(`Attack at ${row},${col}:`,result);
-
-                    this.drawBoard(htmlContainer);
-                });
-
-                htmlContainer.appendChild(cellDiv);
+                container.appendChild(cellDiv);
             }
         }
     }
 
-    enableShipDrag(shipElements, container) {
-        shipElements.forEach(shipEl => {
+    enableShipDrag(container) {
+        const shipContainer = document.getElementById('ship-container');
+        const shipsElements = Array.from(shipContainer.querySelectorAll('.ship'));
+
+        this.drawBoard(container);
+
+        shipsElements.forEach(shipEl => {
+            // Dragging a ship from the ship-container
             shipEl.addEventListener('dragstart', () => {
-                this.draggedShip = new Ship(Number(shipEl.dataset.size));
+                // Create a new Ship instance
+                this.draggedShip = new Ship(Number(shipEl.dataset.size), shipEl.dataset.name);
             });
 
+            // Clicking to rotate
             shipEl.addEventListener('click', () => {
                 this.orientation = this.orientation === 'horizontal' ? 'vertical' : 'horizontal';
                 shipEl.textContent = `${shipEl.dataset.name} (${this.orientation})`;
             });
         });
 
+        // Add drag-and-drop for cells
+        this.addDragListeners(container);
+    }
+
+    addDragListeners(container){
         const cells = container.querySelectorAll('.cell');
         cells.forEach((cell, index) => {
             const row = Number(cell.dataset.row);
@@ -96,8 +119,16 @@ export default class Gameboard{
                 if (!this.draggedShip) return;
                 try {
                     this.placeShip(this.draggedShip, row, col, this.orientation);
+
+                    //removes the dragged ship from the container
+                    const shipContainer = document.getElementById('ship-container');
+                    const shipEl = Array.from(shipContainer.querySelectorAll('.ship'))
+                        .find(el => Number(el.dataset.size) === this.draggedShip.size && el.dataset.name === this.draggedShip.name);
+                    if (shipEl) shipEl.remove();
+
                     this.draggedShip = null;
                     this.drawBoard(container);
+                    this.addDragListeners(container);
                 } catch (err) {
                     alert(err.message);
                 }
