@@ -81,18 +81,25 @@ export default class Gameboard{
             // Dragging a ship from the ship-container
             shipEl.addEventListener('dragstart', () => {
                 // Create a new Ship instance
-                this.draggedShip = new Ship(Number(shipEl.dataset.size), shipEl.dataset.name);
+                this.draggedShip = new Ship(Number(shipEl.dataset.size), shipEl.dataset.name,this.orientation);
             });
-
-            // Clicking to rotate
-            shipEl.addEventListener('click', () => {
-                this.orientation = this.orientation === 'horizontal' ? 'vertical' : 'horizontal';
-                shipEl.textContent = `${shipEl.dataset.name} (${this.orientation})`;
-            });
+        
         });
+
+        this.switchOrientation(shipsElements);
 
         // Add drag-and-drop for cells
         this.addDragListeners(container);
+    }
+
+    switchOrientation(shipEl){
+        const directionButton = document.getElementById('direction-btn');
+
+        directionButton.addEventListener('click', () =>{
+            this.orientation = this.orientation === 'horizontal' ? 'vertical' : 'horizontal';
+
+            directionButton.innerHTML = `${this.orientation}`;
+        });
     }
 
     addDragListeners(container){
@@ -207,6 +214,7 @@ export default class Gameboard{
 
         this.ships.push(ship);
     }   
+
 
     receiveAttack(row, col){
         const target = this.board[row][col];

@@ -90,16 +90,49 @@ export default class Game{
                 this.player1.gameboard.enableShipDrag(boardContainer);
                 this.player2.randomPlaceShips();
             }else{
-                alert('pvp');
+                this.player1.gameboard.enableShipDrag(boardContainer);
+                this.player2.gameboard.enableShipDrag(boardContainer);
             }
             
                    
 
         } else if (screen === 'game') {
             document.getElementById('game-screen').classList.remove('hidden');
-            this.player1.gameboard.drawBoard(document.getElementById('player1-board'),true);
-            this.player2.gameboard.drawBoard(document.getElementById('player2-board'),false);
+
+            if(this.state.mode ==='pvc'){
+                this.player1.gameboard.drawBoard(document.getElementById('player1-board'),true);
+                this.player2.gameboard.drawBoard(document.getElementById('player2-board'),false);
+            }else{
+                
+            }
         }
+    }
+
+    pvpMode(){
+        const placementScreen = document.getElementById('placement-screen');
+
+        placementScreen.innerHTML = `
+
+        <h2>Player 1</h2>
+        <h2>Place Your Ships</h2>
+
+        <div id="ship-container">
+            <div class="ship" draggable="true" data-size="5" data-name = "Submarine">Carrier</div>
+            <div class="ship" draggable="true" data-size="4" data-name = "Battleship">Battleship</div>
+            <div class="ship" draggable="true" data-size="3" data-name = "Cruiser">Cruiser</div>
+            <div class="ship" draggable="true" data-size="3" data-name = "Submarine">Submarine</div>
+            <div class="ship" draggable="true" data-size="2" data-name = "Destroyer">Destroyer</div>
+        </div>
+
+        <div id="player-board-container" class="board"></div>
+
+        <div class="bottom-buttons">
+          <button id="start-game-btn">Start Game</button>
+          <button id="direction-btn">Horizontal</button>
+        </div>
+        `;
+
+
     }
 
 

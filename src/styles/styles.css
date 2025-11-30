@@ -40,6 +40,11 @@ button:hover {
     background-color: #357abd;
 }
 
+.bottom-buttons{
+    display: flex;
+    justify-content: space-between;
+}
+
 
 /* BOARD LAYOUT */
 .board,
