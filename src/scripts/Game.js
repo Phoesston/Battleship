@@ -157,13 +157,7 @@ export default class Game{
         } else if (screen === 'game') {
             document.getElementById('game-screen').classList.remove('hidden');
 
-            if(this.state.mode ==='pvc'){
-                this.player1.gameboard.drawBoard(document.getElementById('player1-board'),true);
-                this.player2.gameboard.drawBoard(document.getElementById('player2-board'),false);
-            }else{
-                this.player1.gameboard.drawBoard(document.getElementById('player1-board'),true);
-                this.player2.gameboard.drawBoard(document.getElementById('player2-board'),true);
-            }
+            this.updateBoards();
         }
     }
 
