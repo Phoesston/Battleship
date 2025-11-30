@@ -127,6 +127,7 @@ button:hover {
     border-radius: 8px;
     margin-bottom: 15px;
     text-align: center;
+    flex-wrap: wrap;
 }
 
 .sunked-ships h3 {

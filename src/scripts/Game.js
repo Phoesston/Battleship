@@ -15,33 +15,77 @@ export default class Game{
     }
 
     setupBoardListeners(){
-        const player2Board = document.getElementById('player2-board');
 
-        player2Board.addEventListener('click', (e) => {
-            // Only proceed if we clicked on a cell
-            if (e.target.classList.contains('cell')) {
-                const row = Number(e.target.dataset.row);
-                const col = Number(e.target.dataset.col);
-                this.handleAttack(row, col);
-            }
-        });
+        if(this.state.mode === 'pvc'){
+            const player2Board = document.getElementById('player2-board');
+
+            player2Board.addEventListener('click', (e) => {
+                // Only proceed if we clicked on a cell
+                if (e.target.classList.contains('cell')) {
+                    const row = Number(e.target.dataset.row);
+                    const col = Number(e.target.dataset.col);
+                    this.handleAttack(row, col);
+                }
+            });
+        }
+
+        if(this.state.mode === 'pvp'){
+            const player1Board = document.getElementById('player1-board');
+            const player2Board = document.getElementById('player2-board');
+
+            player1Board.addEventListener('click', (e) => {
+                
+                if(this.state.turn !== 'player2') return;
+
+                if (e.target.classList.contains('cell')) {
+                    const row = Number(e.target.dataset.row);
+                    const col = Number(e.target.dataset.col);
+                    this.handleAttack(row, col);
+                }
+            });
+
+            player2Board.addEventListener('click', (e) => {
+               
+                if(this.state.turn !== 'player1') return;
+                if (e.target.classList.contains('cell')) {
+                    const row = Number(e.target.dataset.row);
+                    const col = Number(e.target.dataset.col);
+                    this.handleAttack(row, col);
+                }
+            });
+        }
+        
     }
 
     handleAttack(row, col) {
-        
         if (this.state.phase !== 'playing') return;
-        if (this.state.turn !== 'player1') return;
 
-        const result = this.player2.gameboard.receiveAttack(row, col);
+        let currentPlayer, opponent;
 
-        
+        if (this.state.mode === 'pvc') {
+            currentPlayer = this.player1;
+            opponent = this.player2;
+        } else if (this.state.mode === 'pvp') {
+            currentPlayer = this.state.turn === 'player1' ? this.player1 : this.player2;
+            opponent = this.state.turn === 'player1' ? this.player2 : this.player1;
+        } else {
+            return;
+        }
+
+        // Only allow human player to attack
+        if (currentPlayer.type !== 'human') return;
+
+        const result = opponent.gameboard.receiveAttack(row, col);
+
         if (result === 'hit' || result === 'miss') {
-            this.updateBoards(); // Redraw
+            this.updateBoards();
             this.checkGameOver();
-            
+
             if (this.state.phase !== 'gameover') {
                 this.nextTurn();
-                if (this.state.mode === 'pvc') {
+
+                // If PvC and it's computer's turn
+                if (this.state.mode === 'pvc' && this.state.turn === 'computer') {
                     this.computerTurn();
                 }
             }
@@ -49,14 +93,28 @@ export default class Game{
     }
 
     updateBoards() {
-        const p1Board = document.getElementById('player1-board');
-        const p2Board = document.getElementById('player2-board');
 
-        this.player1.gameboard.drawBoard(p1Board, true);
-        this.player2.gameboard.drawBoard(p2Board, false);
+        if(this.state.mode === 'pvc'){
+            const p1Board = document.getElementById('player1-board');
+            const p2Board = document.getElementById('player2-board');
 
-        this.updateSunkList();
-        this.setupBoardListeners();
+            this.player1.gameboard.drawBoard(p1Board, true);
+            this.player2.gameboard.drawBoard(p2Board, false);
+
+            this.updateSunkList();
+            this.setupBoardListeners();
+        }
+       
+        if(this.state.mode === 'pvp'){
+            const p1Board = document.getElementById('player1-board');
+            const p2Board = document.getElementById('player2-board');
+
+            this.player1.gameboard.drawBoard(p1Board, false);
+            this.player2.gameboard.drawBoard(p2Board, false);
+
+            this.updateSunkList();
+            this.setupBoardListeners();
+        }
     }
 
     modeUI() {
@@ -90,8 +148,8 @@ export default class Game{
                 this.player1.gameboard.enableShipDrag(boardContainer);
                 this.player2.randomPlaceShips();
             }else{
-                this.player1.gameboard.enableShipDrag(boardContainer);
-                this.player2.gameboard.enableShipDrag(boardContainer);
+                //pvp mode
+                this.showPvpModePlacementScr(this.state.turn);
             }
             
                    
@@ -103,17 +161,22 @@ export default class Game{
                 this.player1.gameboard.drawBoard(document.getElementById('player1-board'),true);
                 this.player2.gameboard.drawBoard(document.getElementById('player2-board'),false);
             }else{
-                
+                this.player1.gameboard.drawBoard(document.getElementById('player1-board'),true);
+                this.player2.gameboard.drawBoard(document.getElementById('player2-board'),true);
             }
         }
     }
 
-    pvpMode(){
+    showPvpModePlacementScr(player){
         const placementScreen = document.getElementById('placement-screen');
+        placementScreen.classList.remove('hidden');
+
+        const gameboard = player === 'player1' ? this.player1.gameboard : this.player2.gameboard;
+        
 
         placementScreen.innerHTML = `
 
-        <h2>Player 1</h2>
+        <h2>${player}</h2>
         <h2>Place Your Ships</h2>
 
         <div id="ship-container">
@@ -127,10 +190,30 @@ export default class Game{
         <div id="player-board-container" class="board"></div>
 
         <div class="bottom-buttons">
-          <button id="start-game-btn">Start Game</button>
+          <button id="start-game-btn">Next Player</button>
           <button id="direction-btn">Horizontal</button>
         </div>
         `;
+
+        const startBtn = document.getElementById('start-game-btn');
+        const directionBtn = document.getElementById('direction-btn');
+        const boardContainer = document.getElementById('player-board-container');
+
+        // Draw and enable drag for the current player
+        gameboard.drawBoard(boardContainer);
+        gameboard.enableShipDrag(boardContainer);
+
+       
+        if(player === 'player1'){
+            startBtn.textContent = 'Next Player';
+            startBtn.onclick = () => {
+                placementScreen.classList.add('hidden');
+                this.showPvpModePlacementScr('player2'); 
+            };
+        }else{
+            startBtn.textContent = 'Start Game';
+            startBtn.onclick = () => this.startGame();
+        }
 
 
     }
@@ -146,7 +229,6 @@ export default class Game{
         if (this.state.mode === 'pvc' && this.state.turn !== 'player1') {
             this.computerTurn();
         }
-
 
     }
 
